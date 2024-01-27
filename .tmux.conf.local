@@ -251,8 +251,10 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{uptime_s}
 #     - #{username}
 #     - #{username_ssh}
+
+set -g @sysstat_swap_view_tmpl '#{swap.used}/#{swap.total}'
 tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
-tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},}#{?battery_bar, #{battery_bar},}#{?battery_percentage, #{battery_percentage},} , %R , %d %b | #{username}#{root} | #{hostname} "
+tmux_conf_theme_status_right=' #(tmux display-message -p "#{pane_current_path}" | sed "s#$HOME#~#g")#{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},} #{?battery_bar, #{battery_bar},}#{?battery_percentage, #{battery_percentage},} #{sysstat_swap}#($TMUX_PLUGIN_MANAGER_PATH/tmux-mem-cpu-load/tmux-mem-cpu-load -q -v -c -p -l 52 -r 33 -i 2)#{temp_cpu} #{df_avail} '
 
 # status left style
 tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_7,$tmux_conf_theme_colour_8"
@@ -337,6 +339,7 @@ tmux_conf_battery_status_discharging="↓"    # U+2193
 tmux_conf_theme_clock_colour="$tmux_conf_theme_colour_4"
 tmux_conf_theme_clock_style="24"
 
+set -g @plugin 'kolach/tmux-temp'
 
 # -- clipboard -----------------------------------------------------------------
 
@@ -353,10 +356,10 @@ tmux_conf_copy_to_os_clipboard=false
 # this is the place to override or undo settings
 
 # increase history size
-#set -g history-limit 10000
+set -g history-limit 10000
 
 # start with mouse mode enabled
-#set -g mouse on
+set -g mouse on
 
 # force Vi mode
 #   really you should export VISUAL or EDITOR environment variable, see manual
@@ -374,8 +377,7 @@ tmux_conf_copy_to_os_clipboard=false
 # bind c new-window -c '#{pane_current_path}' #!important
 
 # move status line to top
-#set -g status-position top
-
+set -g status-position bottom
 
 # -- tpm -----------------------------------------------------------------------
 
@@ -417,8 +419,11 @@ tmux_conf_uninstall_plugins_on_reload=true
 #set -g @plugin 'tmux-plugins/tmux-resurrect'
 #set -g @plugin 'tmux-plugins/tmux-continuum'
 #set -g @continuum-restore 'on'
-
-
+set -g @plugin 'tassaron/tmux-df'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'samoshkin/tmux-plugin-sysstat'
+set -g @plugin 'thewtex/tmux-mem-cpu-load'
+set -g @plugin 'tmux-plugins/tmux-logging'
 # -- custom variables ----------------------------------------------------------
 
 # to define a custom #{foo} variable, define a POSIX shell function between the
@@ -458,3 +463,16 @@ tmux_conf_uninstall_plugins_on_reload=true
 # "$@"
 # # /!\ do not remove the previous line
 # #     do not write below this line
+
+bind-key C-b send-prefix
+# Bind j to move to the pane below.
+bind j select-pane -D
+
+# Bind k to move to the pane above.
+bind k select-pane -U
+
+# Bind h to move to the pane on the left.
+bind h select-pane -L
+
+# Bind l to move to the pane on the right.
+bind l select-pane -R
